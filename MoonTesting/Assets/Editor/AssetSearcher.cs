@@ -19,6 +19,9 @@ public class AssetSearcher : EditorWindow
 
     HashSet<string> scenesToSearch = new HashSet<string>();
 
+
+    List<string> resultFields = new List<string>();
+
     [MenuItem("MoonStudios/AssetSearcher")]
     public static void ShowWindow()
     {
@@ -76,6 +79,24 @@ public class AssetSearcher : EditorWindow
             searchResults.Clear();
             Search();
         }
+
+        
+        for (int i = 0; i < searchResults.Count; i++)
+        {
+            for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
+            {
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(searchResults[i].scene.name + " " + searchResults[i].gameObjects[j].name);
+                GUILayout.EndHorizontal();
+            }
+
+        }
+        
+
+        /*
+        foreach (string scenePath in scenesToSearch)
+            EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
+        */
     }
 
     void Search()
@@ -101,7 +122,9 @@ public class AssetSearcher : EditorWindow
             
         }
 
-        //EditorSceneManager.CloseScene(scene, true);
+        
+
+        
     }
 
     void SearchGameObject(string sceneName, GameObject go)
