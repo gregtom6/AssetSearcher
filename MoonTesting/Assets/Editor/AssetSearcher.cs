@@ -125,9 +125,27 @@ public class AssetSearcher : EditorWindow
             
         }
 
-        
+        //---------------------------------
 
-        
+        string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
+
+        foreach(string path in allAssetPaths)
+        {
+            System.Type type = AssetDatabase.GetMainAssetTypeAtPath(path);
+
+            if (type != typeof(SceneAsset))
+            {
+                Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+
+                for (int i = 0; i < assets.Length; i++)
+                {
+                    if (assets[i] is GameObject)
+                    {
+                        SearchGameObject("project files", (GameObject)assets[i]);
+                    }
+                }
+            }   
+        }
     }
 
     void SearchGameObject(string sceneName, GameObject go)
