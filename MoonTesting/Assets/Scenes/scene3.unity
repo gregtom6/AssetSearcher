@@ -312,6 +312,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sphere
       objectReference: {fileID: 0}
+    - target: {fileID: 2955792798436037051, guid: 8fc63b810ab68544e841383ccf66fd1e, type: 3}
+      propertyPath: testVar2
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3563732703820740703, guid: 8fc63b810ab68544e841383ccf66fd1e, type: 3}
       propertyPath: m_RootOrder
       value: 2
