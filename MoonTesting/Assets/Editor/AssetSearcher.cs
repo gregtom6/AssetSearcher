@@ -86,7 +86,7 @@ public class AssetSearcher : EditorWindow
             for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField((searchResults[i].scene.name==null?"project file": searchResults[i].scene.name) + " " + searchResults[i].gameObjects[j]);
+                EditorGUILayout.LabelField((searchResults[i].scene.name==null?"project file": searchResults[i].scene.name) +  " " + searchResults[i].paths[j]);
                 GUILayout.EndHorizontal();
             }
 
@@ -220,8 +220,20 @@ public class AssetSearcher : EditorWindow
         if (shouldAdd)
         {
             SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+            searchResult.paths.Add(GetGameObjectPath(go.transform));
             searchResult.gameObjects.Add(go);
         }
+    }
+
+    private static string GetGameObjectPath(Transform transform)
+    {
+        string path = transform.name;
+        while (transform.parent != null)
+        {
+            transform = transform.parent;
+            path = transform.name + "/" + path;
+        }
+        return path;
     }
 }
 
@@ -234,5 +246,6 @@ public class ShouldISearchForItAndString
 public class SearchResult
 {
     public Scene scene;
+    public List<string> paths = new List<string>();
     public List<GameObject> gameObjects = new List<GameObject>();
 }
