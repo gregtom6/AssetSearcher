@@ -173,6 +173,17 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
+        else if(newObject is AnimatorController)
+        {
+            SearchAnimator(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
     }
 
     void SearchMonoScript(GameObject go, string sceneName = null)
@@ -239,6 +250,39 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchAnimator(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            if (c is Animator)
+            {
+                Animator animator = (Animator)c;
+                RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
+
+                if (animatorController==(AnimatorController)newObject)
+                {
+                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                    {
+                        searchResults.Add(new SearchResult()
+                        {
+                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                            gameObjects = new List<GameObject>(),
+                        });
+
+                        AddNewElementToResult((AnimatorController)newObject, sceneName, go);
+                    }
+                    else
+                    {
+                        AddNewElementToResult((AnimatorController)newObject, sceneName, go);
+                    }
+
+                }
+            }
+        }
+    }
+
     void AddNewElementToResult(MonoBehaviour monoBehaviour, string sceneName, GameObject go)
     {
         List<bool> valueChecks = new List<bool>();
@@ -267,6 +311,13 @@ public class AssetSearcher : EditorWindow
     }
 
     void AddNewElementToResult(AnimationClip clip, string sceneName, GameObject go)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        searchResult.paths.Add(GetGameObjectPath(go.transform));
+        searchResult.gameObjects.Add(go);
+    }
+
+    void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
         searchResult.paths.Add(GetGameObjectPath(go.transform));
