@@ -168,14 +168,25 @@ public class AssetSearcher : EditorWindow
 
             int childCount = go.transform.childCount;
 
-            for(int i = 0; i < childCount; i++)
+            for (int i = 0; i < childCount; i++)
             {
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
-        else if(newObject is AnimatorController)
+        else if (newObject is AnimatorController)
         {
             SearchAnimator(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
+        else if (newObject is AudioClip)
+        {
+            SearchAudioClip(go, sceneName); 
 
             int childCount = go.transform.childCount;
 
@@ -224,7 +235,7 @@ public class AssetSearcher : EditorWindow
         for (int i = 0; i < components.Length; i++)
         {
             Component c = components[i];
-            if(c is Animator)
+            if (c is Animator)
             {
                 Animator animator = (Animator)c;
                 RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
@@ -244,7 +255,7 @@ public class AssetSearcher : EditorWindow
                     {
                         AddNewElementToResult((AnimationClip)newObject, sceneName, go);
                     }
-                       
+
                 }
             }
         }
@@ -261,7 +272,7 @@ public class AssetSearcher : EditorWindow
                 Animator animator = (Animator)c;
                 RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
 
-                if (animatorController==(AnimatorController)newObject)
+                if (animatorController == (AnimatorController)newObject)
                 {
                     if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
                     {
@@ -276,6 +287,38 @@ public class AssetSearcher : EditorWindow
                     else
                     {
                         AddNewElementToResult((AnimatorController)newObject, sceneName, go);
+                    }
+
+                }
+            }
+        }
+    }
+
+    void SearchAudioClip(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            if (c is AudioSource)
+            {
+                AudioSource audioSource = (AudioSource)c;
+
+                if (audioSource.clip == (AudioClip)newObject)
+                {
+                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                    {
+                        searchResults.Add(new SearchResult()
+                        {
+                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                            gameObjects = new List<GameObject>(),
+                        });
+
+                        AddNewElementToResult((AudioClip)newObject, sceneName, go);
+                    }
+                    else
+                    {
+                        AddNewElementToResult((AudioClip)newObject, sceneName, go);
                     }
 
                 }
@@ -318,6 +361,13 @@ public class AssetSearcher : EditorWindow
     }
 
     void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        searchResult.paths.Add(GetGameObjectPath(go.transform));
+        searchResult.gameObjects.Add(go);
+    }
+
+    void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
         searchResult.paths.Add(GetGameObjectPath(go.transform));
