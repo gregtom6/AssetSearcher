@@ -195,6 +195,17 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
+        else if(newObject is Texture2D)
+        {
+            SearchTexture2D(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
     }
 
     void SearchMonoScript(GameObject go, string sceneName = null)
@@ -326,6 +337,66 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchTexture2D(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            if (c is Animator)
+            {
+                Animator animator = (Animator)c;
+                RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
+                for(int j=0;j< animatorController.animationClips.Length;j++)
+                {
+                    EditorCurveBinding[] objectCurves = AnimationUtility.GetObjectReferenceCurveBindings(animatorController.animationClips[j]);
+                    for (int k = 0; k < objectCurves.Length; k++)
+                    {
+                        ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(animatorController.animationClips[j], objectCurves[k]);
+
+                        for(int l=0; l < keyframes.Length; l++)
+                        {
+                            if (textureFromSprite((Sprite)keyframes[l].value) == newObject)
+                            {
+                                if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                                {
+                                    searchResults.Add(new SearchResult()
+                                    {
+                                        scene = EditorSceneManager.GetSceneByName(sceneName),
+                                        gameObjects = new List<GameObject>(),
+                                    });
+
+                                    AddNewElementToResult((Texture2D)newObject, sceneName, go);
+                                }
+                                else
+                                {
+                                    AddNewElementToResult((Texture2D)newObject, sceneName, go);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static Texture2D textureFromSprite(Sprite sprite)
+    {
+        if (sprite.rect.width != sprite.texture.width)
+        {
+            Texture2D newText = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
+            Color[] newColors = sprite.texture.GetPixels((int)sprite.textureRect.x,
+                                                         (int)sprite.textureRect.y,
+                                                         (int)sprite.textureRect.width,
+                                                         (int)sprite.textureRect.height);
+            newText.SetPixels(newColors);
+            newText.Apply();
+            return newText;
+        }
+        else
+            return sprite.texture;
+    }
+
     void AddNewElementToResult(MonoBehaviour monoBehaviour, string sceneName, GameObject go)
     {
         List<bool> valueChecks = new List<bool>();
@@ -374,6 +445,16 @@ public class AssetSearcher : EditorWindow
     }
 
     void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.gameObjects.Add(go);
+        }
+    }
+
+    void AddNewElementToResult(Texture2D texture2D, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
         if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
