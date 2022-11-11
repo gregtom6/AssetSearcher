@@ -86,7 +86,7 @@ public class AssetSearcher : EditorWindow
             for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(searchResults[i].scene.name + " " + searchResults[i].gameObjects[j].name);
+                EditorGUILayout.LabelField((searchResults[i].scene.name==null?"project file": searchResults[i].scene.name) + " " + searchResults[i].gameObjects[j]);
                 GUILayout.EndHorizontal();
             }
 
@@ -119,7 +119,7 @@ public class AssetSearcher : EditorWindow
 
             for (int i = 0; i < rootGameObjects.Length; i++)
             {
-                SearchGameObject(scene.name,rootGameObjects[i]);
+                SearchGameObject(rootGameObjects[i], scene.name);
             }
 
             
@@ -141,29 +141,29 @@ public class AssetSearcher : EditorWindow
                 {
                     if (assets[i] is GameObject)
                     {
-                        SearchGameObject("project files", (GameObject)assets[i]);
+                        SearchGameObject((GameObject)assets[i]);
                     }
                 }
             }   
         }
     }
 
-    void SearchGameObject(string sceneName, GameObject go)
+    void SearchGameObject(GameObject go, string sceneName=null)
     {
         if (newObject is MonoScript)
         {
-            SearchMonoScript(sceneName, go);
+            SearchMonoScript(go, sceneName);
 
             int childCount = go.transform.childCount;
 
             for(int i = 0; i < childCount; i++)
             {
-                SearchGameObject(sceneName, go.transform.GetChild(i).gameObject);
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
     }
 
-    void SearchMonoScript(string sceneName, GameObject go)
+    void SearchMonoScript(GameObject go, string sceneName=null)
     {
         Component[] components = go.GetComponents<Component>();
         for (int i = 0; i < components.Length; i++)
@@ -179,7 +179,7 @@ public class AssetSearcher : EditorWindow
                     {
                         searchResults.Add(new SearchResult()
                         {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                            scene =  EditorSceneManager.GetSceneByName(sceneName),
                             gameObjects=new List<GameObject>(),
                         });
 
