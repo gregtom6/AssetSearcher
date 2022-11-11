@@ -135,6 +135,13 @@ public class AssetSearcher : EditorWindow
         if (newObject is MonoScript)
         {
             SearchMonoScript(sceneName, go);
+
+            int childCount = go.transform.childCount;
+
+            for(int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(sceneName, go.transform.GetChild(i).gameObject);
+            }
         }
     }
 
