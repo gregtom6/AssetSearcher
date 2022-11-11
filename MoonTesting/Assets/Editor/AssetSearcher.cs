@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -14,7 +15,9 @@ public class AssetSearcher : EditorWindow
     List<bool> shouldISearchForBools = new List<bool>();
     System.Type previousType;
 
-    List<GameObject> results=new List<GameObject> ();
+    List<SearchResult> searchResults = new List<SearchResult>();
+
+    HashSet<string> scenesToSearch = new HashSet<string>();
 
     [MenuItem("MoonStudios/AssetSearcher")]
     public static void ShowWindow()
@@ -70,39 +73,46 @@ public class AssetSearcher : EditorWindow
 
         if (GUILayout.Button("search"))
         {
-            results.Clear();
+            searchResults.Clear();
             Search();
         }
     }
 
     void Search()
     {
-        string scenePath = "Assets/Scenes/scene1.unity";
+        string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
+        for (int i = 0; i < sceneGuids.Length; i++)
+            scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
 
-        Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
-
-        if (!scene.isLoaded)
-            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-
-        GameObject[] rootGameObjects = scene.GetRootGameObjects();
-
-        for (int i = 0; i < rootGameObjects.Length; i++)
+        foreach(string scenePath in scenesToSearch)
         {
-            SearchGameObject(rootGameObjects[i]);
+            Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
+
+            if (!scene.isLoaded)
+                scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+
+            GameObject[] rootGameObjects = scene.GetRootGameObjects();
+
+            for (int i = 0; i < rootGameObjects.Length; i++)
+            {
+                SearchGameObject(scene.name,rootGameObjects[i]);
+            }
+
+            
         }
 
-        EditorSceneManager.CloseScene(scene, true);
+        //EditorSceneManager.CloseScene(scene, true);
     }
 
-    void SearchGameObject(GameObject go)
+    void SearchGameObject(string sceneName, GameObject go)
     {
         if (newObject is MonoScript)
         {
-            SearchMonoScript(go);
+            SearchMonoScript(sceneName, go);
         }
     }
 
-    void SearchMonoScript(GameObject go)
+    void SearchMonoScript(string sceneName, GameObject go)
     {
         Component[] components = go.GetComponents<Component>();
         for (int i = 0; i < components.Length; i++)
@@ -114,7 +124,23 @@ public class AssetSearcher : EditorWindow
                 MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
                 if (script == newObject)
                 {
-                    results.Add(go);
+                    if(!searchResults.Any(x=>x.scene== EditorSceneManager.GetSceneByName(sceneName)))
+                    {
+                        searchResults.Add(new SearchResult()
+                        {
+                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                            gameObjects=new List<GameObject>(),
+                        });
+
+                        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+                        searchResult.gameObjects.Add(go);
+                    }
+                    else
+                    {
+                        SearchResult searchResult= searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+                        searchResult.gameObjects.Add(go);
+                    }
+                    
                 }
             }
             
@@ -126,4 +152,10 @@ public class ShouldISearchForItAndString
 {
     public bool shouldISearchForIt;
     public object value;
+}
+
+public class SearchResult
+{
+    public Scene scene;
+    public List<GameObject> gameObjects = new List<GameObject>();
 }
