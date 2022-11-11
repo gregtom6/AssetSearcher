@@ -92,11 +92,14 @@ public class AssetSearcher : EditorWindow
 
         }
         
-
         /*
-        foreach (string scenePath in scenesToSearch)
-            EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
+        if(searchResults.Count > 0)
+        {
+            foreach (string scenePath in scenesToSearch)
+                EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
+        }
         */
+        
     }
 
     void Search()
@@ -155,18 +158,44 @@ public class AssetSearcher : EditorWindow
                             gameObjects=new List<GameObject>(),
                         });
 
-                        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-                        searchResult.gameObjects.Add(go);
+                        AddNewElementToResult(monoBehaviour,sceneName, go);
                     }
                     else
                     {
-                        SearchResult searchResult= searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-                        searchResult.gameObjects.Add(go);
+                        AddNewElementToResult(monoBehaviour, sceneName, go);
+
+                        
                     }
                     
                 }
             }
             
+        }
+    }
+
+    void AddNewElementToResult(MonoBehaviour monoBehaviour,string sceneName, GameObject go)
+    {
+        List<bool> valueChecks = new List<bool>();
+
+        foreach (FieldInfo fieldInfo in monoBehaviour.GetType().GetFields())
+        {
+            if (fieldsAndTheirValuesToSearchFor[fieldInfo].shouldISearchForIt)
+                valueChecks.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].value.ToString());
+        }
+
+
+        bool shouldAdd = true;
+
+        for (int i = 0; i < valueChecks.Count; i++)
+        {
+            if (!valueChecks[i])
+                shouldAdd = false;
+        }
+
+        if (shouldAdd)
+        {
+            SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+            searchResult.gameObjects.Add(go);
         }
     }
 }
