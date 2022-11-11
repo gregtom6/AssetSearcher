@@ -356,22 +356,31 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(AnimationClip clip, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        searchResult.paths.Add(GetGameObjectPath(go.transform));
-        searchResult.gameObjects.Add(go);
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.gameObjects.Add(go);
+        }
     }
 
     void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        searchResult.paths.Add(GetGameObjectPath(go.transform));
-        searchResult.gameObjects.Add(go);
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.gameObjects.Add(go);
+        }
     }
 
     void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        searchResult.paths.Add(GetGameObjectPath(go.transform));
-        searchResult.gameObjects.Add(go);
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.gameObjects.Add(go);
+        }
     }
 
     private static string GetGameObjectPath(Transform transform)
