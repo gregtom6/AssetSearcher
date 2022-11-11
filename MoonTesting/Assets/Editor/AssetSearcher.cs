@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AssetSearcher : EditorWindow
 {
@@ -11,6 +13,8 @@ public class AssetSearcher : EditorWindow
     List<string> valueOfFields = new List<string>();
     List<bool> shouldISearchForBools = new List<bool>();
     System.Type previousType;
+
+    List<GameObject> results=new List<GameObject> ();
 
     [MenuItem("MoonStudios/AssetSearcher")]
     public static void ShowWindow()
@@ -66,13 +70,55 @@ public class AssetSearcher : EditorWindow
 
         if (GUILayout.Button("search"))
         {
+            results.Clear();
             Search();
         }
     }
 
     void Search()
     {
+        string scenePath = "Assets/Scenes/scene1.unity";
 
+        Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
+
+        if (!scene.isLoaded)
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+
+        GameObject[] rootGameObjects = scene.GetRootGameObjects();
+
+        for (int i = 0; i < rootGameObjects.Length; i++)
+        {
+            SearchGameObject(rootGameObjects[i]);
+        }
+
+        EditorSceneManager.CloseScene(scene, true);
+    }
+
+    void SearchGameObject(GameObject go)
+    {
+        if (newObject is MonoScript)
+        {
+            SearchMonoScript(go);
+        }
+    }
+
+    void SearchMonoScript(GameObject go)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            if(c is MonoBehaviour)
+            {
+                MonoBehaviour monoBehaviour = (MonoBehaviour)c;
+                MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
+                if (script == newObject)
+                {
+                    results.Add(go);
+                }
+            }
+            
+        }
     }
 }
 
