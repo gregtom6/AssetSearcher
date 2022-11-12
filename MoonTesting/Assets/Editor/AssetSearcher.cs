@@ -93,7 +93,7 @@ public class AssetSearcher : EditorWindow
             for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField((searchResults[i].scene.name == null ? "project file" : searchResults[i].scene.name) + " " + searchResults[i].paths[j]);
+                EditorGUILayout.LabelField((searchResults[i].scene.name == null ? "project file" : searchResults[i].scene.name) + " - " + searchResults[i].paths[j]);
                 EditorGUILayout.ObjectField(searchResults[i].gameObjects[j],typeof(GameObject), true);
                 GUILayout.EndHorizontal();
             }
@@ -204,7 +204,6 @@ public class AssetSearcher : EditorWindow
         }
         else if(newObject is Texture2D)
         {
-            //dont just animation search, also sprite renderer search
             SearchTexture2D(go, sceneName);
 
             int childCount = go.transform.childCount;
@@ -217,6 +216,17 @@ public class AssetSearcher : EditorWindow
         else if(newObject is Material)
         {
             SearchMaterial(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
+        else if(newObject is Shader)
+        {
+            SearchShader(go, sceneName);
 
             int childCount = go.transform.childCount;
 
@@ -582,6 +592,51 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchShader(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            SerializedObject so = new SerializedObject(c);
+            SerializedProperty iterator = so.GetIterator();
+
+            while (iterator.Next(true))
+            {
+                if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                {
+                    if (IsItInsideMaterial(iterator) || IsItTheSearchedShader(iterator))
+                    {
+                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                        {
+                            searchResults.Add(new SearchResult()
+                            {
+                                scene = EditorSceneManager.GetSceneByName(sceneName),
+                                gameObjects = new List<GameObject>(),
+                            });
+
+                            AddNewElementToResult((Shader)newObject, sceneName, go, c);
+                        }
+                        else
+                        {
+                            AddNewElementToResult((Shader)newObject, sceneName, go, c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool IsItInsideMaterial(SerializedProperty iterator)
+    {
+        return iterator.objectReferenceValue is Material && ((Material)iterator.objectReferenceValue).shader == newObject;
+    }
+
+    bool IsItTheSearchedShader(SerializedProperty iterator)
+    {
+        return iterator.objectReferenceValue is Shader && (Shader)iterator.objectReferenceValue == newObject;
+    }
+
     public static Texture2D textureFromSprite(Sprite sprite)
     {
         if (sprite.rect.width != sprite.texture.width)
@@ -670,6 +725,16 @@ public class AssetSearcher : EditorWindow
     }
 
     void AddNewElementToResult(Material material, string sceneName, GameObject go, Component c)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.gameObjects.Add(go);
+        }
+    }
+
+    void AddNewElementToResult(Shader shader, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
         if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
