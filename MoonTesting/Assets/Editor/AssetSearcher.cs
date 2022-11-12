@@ -93,11 +93,13 @@ public class AssetSearcher : EditorWindow
             for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField((searchResults[i].scene.name == null ? "project file" : searchResults[i].scene.name) + " - " + searchResults[i].paths[j]);
-                EditorGUILayout.ObjectField(searchResults[i].gameObjects[j], typeof(GameObject), true);
+                EditorGUILayout.LabelField(searchResults[i].paths[j] + ((searchResults[i].scene.name == null && searchResults[i].gameObjects[j] != null) ? " - " + AssetDatabase.GetAssetPath(searchResults[i].gameObjects[j]) : ""));
+                if (searchResults[i].gameObjects[j] != null)
+                    EditorGUILayout.ObjectField(searchResults[i].gameObjects[j], typeof(GameObject), true);
+                else if (searchResults[i].scriptableObjects[j] != null)
+                    EditorGUILayout.ObjectField(searchResults[i].scriptableObjects[j], typeof(ScriptableObject), true);
                 GUILayout.EndHorizontal();
             }
-
         }
 
         /*
@@ -149,14 +151,20 @@ public class AssetSearcher : EditorWindow
                 {
                     if (assets[i] is GameObject)
                     {
-                        SearchGameObject((GameObject)assets[i]);
+                        SearchGameObject((GameObject)assets[i], "", path);
+                    }
+                    else if (assets[i] is ScriptableObject)
+                    {
+                        SearchScriptableObject((ScriptableObject)assets[i], "", path);
                     }
                 }
             }
         }
+
+        Debug.Log("");
     }
 
-    void SearchGameObject(GameObject go, string sceneName = null)
+    void SearchGameObject(GameObject go, string sceneName = null, string path = null)
     {
         if (newObject is MonoScript)
         {
@@ -693,6 +701,36 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchScriptableObject(ScriptableObject sr, string sceneName = null, string path = null)
+    {
+        SerializedObject so = new SerializedObject(sr);
+        SerializedProperty iterator = so.GetIterator();
+
+        while (iterator.Next(true))
+        {
+            if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+            {
+                if (iterator.objectReferenceValue is Sprite && textureFromSprite((Sprite)iterator.objectReferenceValue) == newObject)
+                {
+                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                    {
+                        searchResults.Add(new SearchResult()
+                        {
+                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                            gameObjects = new List<GameObject>(),
+                        });
+
+                        AddNewElementToResult(sr, path);
+                    }
+                    else
+                    {
+                        AddNewElementToResult(sr, path);
+                    }
+                }
+            }
+        }
+    }
+
     bool IsItInsideMaterial(SerializedProperty iterator)
     {
         return iterator.objectReferenceValue is Material && ((Material)iterator.objectReferenceValue).shader == newObject;
@@ -783,9 +821,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(Texture2D texture2D, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -820,8 +858,20 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void AddNewElementToResult(ScriptableObject scriptableObject, string path)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
+        if (!searchResult.paths.Contains(path))
+        {
+            searchResult.paths.Add(path);
+            searchResult.gameObjects.Add(null);
+            searchResult.scriptableObjects.Add(scriptableObject);
+        }
+    }
+
     private static string GetGameObjectPath(Transform transform, Component c)
     {
+        /*
         if (c != null)
         {
             string path = string.Empty;
@@ -842,6 +892,15 @@ public class AssetSearcher : EditorWindow
             }
             return path;
         }
+        */
+
+        string path = "/" + transform.name;
+        while (transform.transform.parent != null)
+        {
+            transform = transform.parent;
+            path = "/" + transform.name + path;
+        }
+        return path + (c != null ? " - " + c.ToString() : "");
     }
 }
 
@@ -856,4 +915,5 @@ public class SearchResult
     public Scene scene;
     public List<string> paths = new List<string>();
     public List<GameObject> gameObjects = new List<GameObject>();
+    public List<ScriptableObject> scriptableObjects = new List<ScriptableObject>();
 }
