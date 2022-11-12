@@ -243,8 +243,40 @@ public class AssetSearcher : EditorWindow
                         AddNewElementToResult(monoBehaviour, sceneName, go, c);
                     }
                 }
-            }
+                else
+                {
+                    SerializedObject so = new SerializedObject(c);
+                    SerializedProperty iterator = so.GetIterator();
 
+                    while (iterator.Next(true))
+                    {
+                        if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                        {
+                            if (iterator.objectReferenceValue != null && iterator.objectReferenceValue is MonoBehaviour)
+                            {
+                                script = MonoScript.FromMonoBehaviour((MonoBehaviour)iterator.objectReferenceValue);
+                                if(script == newObject)
+                                {
+                                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                                    {
+                                        searchResults.Add(new SearchResult()
+                                        {
+                                            scene = EditorSceneManager.GetSceneByName(sceneName),
+                                            gameObjects = new List<GameObject>(),
+                                        });
+
+                                        AddNewElementToResult((MonoBehaviour)iterator.objectReferenceValue, sceneName, go, c);
+                                    }
+                                    else
+                                    {
+                                        AddNewElementToResult((MonoBehaviour)iterator.objectReferenceValue, sceneName, go, c);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
