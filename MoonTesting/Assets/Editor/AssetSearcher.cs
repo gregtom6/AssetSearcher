@@ -214,6 +214,17 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
+        else if(newObject is Material)
+        {
+            SearchMaterial(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
     }
 
     void SearchMonoScript(GameObject go, string sceneName = null)
@@ -536,6 +547,41 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchMaterial(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            SerializedObject so = new SerializedObject(c);
+            SerializedProperty iterator = so.GetIterator();
+
+            while (iterator.Next(true))
+            {
+                if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                {
+                    if (iterator.objectReferenceValue is Material && iterator.objectReferenceValue == newObject)
+                    {
+                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                        {
+                            searchResults.Add(new SearchResult()
+                            {
+                                scene = EditorSceneManager.GetSceneByName(sceneName),
+                                gameObjects = new List<GameObject>(),
+                            });
+
+                            AddNewElementToResult((Material)newObject, sceneName, go, c);
+                        }
+                        else
+                        {
+                            AddNewElementToResult((Material)newObject, sceneName, go, c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public static Texture2D textureFromSprite(Sprite sprite)
     {
         if (sprite.rect.width != sprite.texture.width)
@@ -614,6 +660,16 @@ public class AssetSearcher : EditorWindow
     }
 
     void AddNewElementToResult(Texture2D texture2D, string sceneName, GameObject go, Component c)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.gameObjects.Add(go);
+        }
+    }
+
+    void AddNewElementToResult(Material material, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
         if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))

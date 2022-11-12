@@ -9,4 +9,5 @@ public class TestScript5 : MonoBehaviour
     public AnimationClip animclip;
     public RuntimeAnimatorController controller;
     public Sprite sprite;
+    public Material material;
 }
