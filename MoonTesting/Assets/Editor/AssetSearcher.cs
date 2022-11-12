@@ -236,11 +236,11 @@ public class AssetSearcher : EditorWindow
                             gameObjects = new List<GameObject>(),
                         });
 
-                        AddNewElementToResult(monoBehaviour, sceneName, go);
+                        AddNewElementToResult(monoBehaviour, sceneName, go, c);
                     }
                     else
                     {
-                        AddNewElementToResult(monoBehaviour, sceneName, go);
+                        AddNewElementToResult(monoBehaviour, sceneName, go, c);
                     }
                 }
             }
@@ -268,11 +268,11 @@ public class AssetSearcher : EditorWindow
                             gameObjects = new List<GameObject>(),
                         });
 
-                        AddNewElementToResult((AnimationClip)newObject, sceneName, go);
+                        AddNewElementToResult((AnimationClip)newObject, sceneName, go, c);
                     }
                     else
                     {
-                        AddNewElementToResult((AnimationClip)newObject, sceneName, go);
+                        AddNewElementToResult((AnimationClip)newObject, sceneName, go, c);
                     }
 
                 }
@@ -301,11 +301,11 @@ public class AssetSearcher : EditorWindow
                             gameObjects = new List<GameObject>(),
                         });
 
-                        AddNewElementToResult((AnimatorController)newObject, sceneName, go);
+                        AddNewElementToResult((AnimatorController)newObject, sceneName, go, c);
                     }
                     else
                     {
-                        AddNewElementToResult((AnimatorController)newObject, sceneName, go);
+                        AddNewElementToResult((AnimatorController)newObject, sceneName, go, c);
                     }
 
                 }
@@ -333,11 +333,11 @@ public class AssetSearcher : EditorWindow
                             gameObjects = new List<GameObject>(),
                         });
 
-                        AddNewElementToResult((AudioClip)newObject, sceneName, go);
+                        AddNewElementToResult((AudioClip)newObject, sceneName, go, c);
                     }
                     else
                     {
-                        AddNewElementToResult((AudioClip)newObject, sceneName, go);
+                        AddNewElementToResult((AudioClip)newObject, sceneName, go, c);
                     }
 
                 }
@@ -374,11 +374,11 @@ public class AssetSearcher : EditorWindow
                                         gameObjects = new List<GameObject>(),
                                     });
 
-                                    AddNewElementToResult((Texture2D)newObject, sceneName, go);
+                                    AddNewElementToResult((Texture2D)newObject, sceneName, go, c);
                                 }
                                 else
                                 {
-                                    AddNewElementToResult((Texture2D)newObject, sceneName, go);
+                                    AddNewElementToResult((Texture2D)newObject, sceneName, go, c);
                                 }
                             }
                         }
@@ -405,7 +405,7 @@ public class AssetSearcher : EditorWindow
             return sprite.texture;
     }
 
-    void AddNewElementToResult(MonoBehaviour monoBehaviour, string sceneName, GameObject go)
+    void AddNewElementToResult(MonoBehaviour monoBehaviour, string sceneName, GameObject go, Component c)
     {
         List<bool> valueChecks = new List<bool>();
 
@@ -427,60 +427,63 @@ public class AssetSearcher : EditorWindow
         if (shouldAdd)
         {
             SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-            searchResult.paths.Add(GetGameObjectPath(go.transform));
-            searchResult.gameObjects.Add(go);
+            if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+            {
+                searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+                searchResult.gameObjects.Add(go);
+            }
         }
     }
 
-    void AddNewElementToResult(AnimationClip clip, string sceneName, GameObject go)
+    void AddNewElementToResult(AnimationClip clip, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
 
-    void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go)
+    void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
 
-    void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go)
+    void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
 
-    void AddNewElementToResult(Texture2D texture2D, string sceneName, GameObject go)
+    void AddNewElementToResult(Texture2D texture2D, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform)))
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform));
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
 
-    private static string GetGameObjectPath(Transform transform)
+    private static string GetGameObjectPath(Transform transform, Component c)
     {
-        string path = transform.name;
+        string path = string.Empty;
         while (transform.parent != null)
         {
             transform = transform.parent;
             path = transform.name + "/" + path;
         }
-        return path;
+        return path + c.ToString();
     }
 }
 
