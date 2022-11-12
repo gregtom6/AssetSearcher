@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class TestScript4 : MonoBehaviour
 {
-    
+    public GameObject g;
 }

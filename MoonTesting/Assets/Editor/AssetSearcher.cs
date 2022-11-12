@@ -94,7 +94,7 @@ public class AssetSearcher : EditorWindow
             {
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField((searchResults[i].scene.name == null ? "project file" : searchResults[i].scene.name) + " - " + searchResults[i].paths[j]);
-                EditorGUILayout.ObjectField(searchResults[i].gameObjects[j],typeof(GameObject), true);
+                EditorGUILayout.ObjectField(searchResults[i].gameObjects[j], typeof(GameObject), true);
                 GUILayout.EndHorizontal();
             }
 
@@ -193,7 +193,7 @@ public class AssetSearcher : EditorWindow
         }
         else if (newObject is AudioClip)
         {
-            SearchAudioClip(go, sceneName); 
+            SearchAudioClip(go, sceneName);
 
             int childCount = go.transform.childCount;
 
@@ -202,7 +202,7 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
-        else if(newObject is Texture2D)
+        else if (newObject is Texture2D)
         {
             SearchTexture2D(go, sceneName);
 
@@ -213,7 +213,7 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
-        else if(newObject is Material)
+        else if (newObject is Material)
         {
             SearchMaterial(go, sceneName);
 
@@ -224,9 +224,20 @@ public class AssetSearcher : EditorWindow
                 SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
             }
         }
-        else if(newObject is Shader)
+        else if (newObject is Shader)
         {
             SearchShader(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
+        else if (newObject is GameObject)
+        {
+            SearchPrefab(go, sceneName);
 
             int childCount = go.transform.childCount;
 
@@ -276,7 +287,7 @@ public class AssetSearcher : EditorWindow
                             if (iterator.objectReferenceValue != null && iterator.objectReferenceValue is MonoBehaviour)
                             {
                                 script = MonoScript.FromMonoBehaviour((MonoBehaviour)iterator.objectReferenceValue);
-                                if(script == newObject)
+                                if (script == newObject)
                                 {
                                     if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
                                     {
@@ -495,14 +506,14 @@ public class AssetSearcher : EditorWindow
             {
                 Animator animator = (Animator)c;
                 RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
-                for(int j=0;j< animatorController.animationClips.Length;j++)
+                for (int j = 0; j < animatorController.animationClips.Length; j++)
                 {
                     EditorCurveBinding[] objectCurves = AnimationUtility.GetObjectReferenceCurveBindings(animatorController.animationClips[j]);
                     for (int k = 0; k < objectCurves.Length; k++)
                     {
                         ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(animatorController.animationClips[j], objectCurves[k]);
 
-                        for(int l=0; l < keyframes.Length; l++)
+                        for (int l = 0; l < keyframes.Length; l++)
                         {
                             if (textureFromSprite((Sprite)keyframes[l].value) == newObject)
                             {
@@ -627,6 +638,61 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void SearchPrefab(GameObject go, string sceneName = null)
+    {
+        if (go == newObject)
+        {
+            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+            {
+                searchResults.Add(new SearchResult()
+                {
+                    scene = EditorSceneManager.GetSceneByName(sceneName),
+                    gameObjects = new List<GameObject>(),
+                });
+
+                AddNewElementToResult(go, sceneName, go, null);
+            }
+            else
+            {
+                AddNewElementToResult(go, sceneName, go, null);
+            }
+        }
+        else
+        {
+            Component[] components = go.GetComponents<Component>();
+            for (int i = 0; i < components.Length; i++)
+            {
+                Component c = components[i];
+                SerializedObject so = new SerializedObject(c);
+                SerializedProperty iterator = so.GetIterator();
+
+                while (iterator.Next(true))
+                {
+                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                    {
+                        if (iterator.objectReferenceValue is GameObject && iterator.objectReferenceValue == newObject)
+                        {
+                            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                            {
+                                searchResults.Add(new SearchResult()
+                                {
+                                    scene = EditorSceneManager.GetSceneByName(sceneName),
+                                    gameObjects = new List<GameObject>(),
+                                });
+
+                                AddNewElementToResult((GameObject)newObject, sceneName, go, c);
+                            }
+                            else
+                            {
+                                AddNewElementToResult((GameObject)newObject, sceneName, go, c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     bool IsItInsideMaterial(SerializedProperty iterator)
     {
         return iterator.objectReferenceValue is Material && ((Material)iterator.objectReferenceValue).shader == newObject;
@@ -744,15 +810,38 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void AddNewElementToResult(GameObject prefab, string sceneName, GameObject go, Component c)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        {
+            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.gameObjects.Add(go);
+        }
+    }
+
     private static string GetGameObjectPath(Transform transform, Component c)
     {
-        string path = string.Empty;
-        while (transform.parent != null)
+        if (c != null)
         {
-            transform = transform.parent;
-            path = transform.name + "/" + path;
+            string path = string.Empty;
+            while (transform.parent != null)
+            {
+                transform = transform.parent;
+                path = transform.name + "/" + path;
+            }
+            return path + c.ToString();
         }
-        return path + c.ToString();
+        else
+        {
+            string path = "/" + transform.name;
+            while (transform.transform.parent != null)
+            {
+                transform = transform.parent;
+                path = "/" + transform.name + path;
+            }
+            return path;
+        }
     }
 }
 
