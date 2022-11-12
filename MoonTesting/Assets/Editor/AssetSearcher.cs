@@ -31,7 +31,13 @@ public class AssetSearcher : EditorWindow
 
     void OnGUI()
     {
+        UnityEngine.Object prevObject = newObject;
         newObject = EditorGUILayout.ObjectField("", newObject, typeof(UnityEngine.Object), true);
+
+        if (prevObject != newObject)
+        {
+            searchResults.Clear();
+        }
 
         if (newObject is MonoScript)
         {
