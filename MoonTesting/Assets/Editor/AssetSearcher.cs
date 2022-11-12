@@ -309,6 +309,35 @@ public class AssetSearcher : EditorWindow
 
                 }
             }
+            else
+            {
+                SerializedObject so = new SerializedObject(c);
+                SerializedProperty iterator = so.GetIterator();
+
+                while (iterator.Next(true))
+                {
+                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                    {
+                        if (iterator.objectReferenceValue is AnimationClip && (AnimationClip)iterator.objectReferenceValue == newObject)
+                        {
+                            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                            {
+                                searchResults.Add(new SearchResult()
+                                {
+                                    scene = EditorSceneManager.GetSceneByName(sceneName),
+                                    gameObjects = new List<GameObject>(),
+                                });
+
+                                AddNewElementToResult((AnimationClip)newObject, sceneName, go, c);
+                            }
+                            else
+                            {
+                                AddNewElementToResult((AnimationClip)newObject, sceneName, go, c);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -340,6 +369,35 @@ public class AssetSearcher : EditorWindow
                         AddNewElementToResult((AnimatorController)newObject, sceneName, go, c);
                     }
 
+                }
+            }
+            else
+            {
+                SerializedObject so = new SerializedObject(c);
+                SerializedProperty iterator = so.GetIterator();
+
+                while (iterator.Next(true))
+                {
+                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                    {
+                        if (iterator.objectReferenceValue is RuntimeAnimatorController && (RuntimeAnimatorController)iterator.objectReferenceValue == newObject)
+                        {
+                            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                            {
+                                searchResults.Add(new SearchResult()
+                                {
+                                    scene = EditorSceneManager.GetSceneByName(sceneName),
+                                    gameObjects = new List<GameObject>(),
+                                });
+
+                                AddNewElementToResult((AnimatorController)newObject, sceneName, go, c);
+                            }
+                            else
+                            {
+                                AddNewElementToResult((AnimatorController)newObject, sceneName, go, c);
+                            }
+                        }
+                    }
                 }
             }
         }

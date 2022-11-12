@@ -327,6 +327,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clip: {fileID: 8300000, guid: ed498636010d60d40b178ea0e98d744d, type: 3}
   script1: {fileID: 121787230}
+  animclip: {fileID: 7400000, guid: 52899dd87f9dfb849902708099314d19, type: 2}
+  controller: {fileID: 9100000, guid: 4e0a50c817caae049bb8641c2aa9eac1, type: 2}
+  sprite: {fileID: 21300000, guid: 68318aefbb26f824283c73580450eb8a, type: 3}
 --- !u!1001 &1163397356
 PrefabInstance:
   m_ObjectHideFlags: 0
