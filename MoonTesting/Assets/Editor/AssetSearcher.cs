@@ -321,20 +321,7 @@ public class AssetSearcher : EditorWindow
                 MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
                 if (script == newObject)
                 {
-                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                    {
-                        searchResults.Add(new SearchResult()
-                        {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                            gameObjects = new List<GameObject>(),
-                        });
-
-                        AddNewElementToResult(monoBehaviour, sceneName, go, c);
-                    }
-                    else
-                    {
-                        AddNewElementToResult(monoBehaviour, sceneName, go, c);
-                    }
+                    AddNewElementToResult(monoBehaviour, sceneName, go, c);
                 }
                 else
                 {
@@ -350,20 +337,7 @@ public class AssetSearcher : EditorWindow
                                 script = MonoScript.FromMonoBehaviour((MonoBehaviour)iterator.objectReferenceValue);
                                 if (script == newObject)
                                 {
-                                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                                    {
-                                        searchResults.Add(new SearchResult()
-                                        {
-                                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                                            gameObjects = new List<GameObject>(),
-                                        });
-
-                                        AddNewElementToResult((MonoBehaviour)iterator.objectReferenceValue, sceneName, go, c);
-                                    }
-                                    else
-                                    {
-                                        AddNewElementToResult((MonoBehaviour)iterator.objectReferenceValue, sceneName, go, c);
-                                    }
+                                    AddNewElementToResult((MonoBehaviour)iterator.objectReferenceValue, sceneName, go, c);
                                 }
                             }
                         }
@@ -902,6 +876,15 @@ public class AssetSearcher : EditorWindow
 
         if (shouldAdd)
         {
+            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+            {
+                searchResults.Add(new SearchResult()
+                {
+                    scene=EditorSceneManager.GetSceneByName(sceneName),
+                    gameObjects=new List<GameObject>(),
+                });
+            }
+
             SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
             if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
             {
