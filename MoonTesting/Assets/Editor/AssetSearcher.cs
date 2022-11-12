@@ -166,7 +166,7 @@ public class AssetSearcher : EditorWindow
                     }
                     else if (assets[i] is ScriptableObject)
                     {
-                        SearchInsideScriptableObject((ScriptableObject)assets[i], "", path);
+                        SearchAnyInSC((ScriptableObject)assets[i], "", path);
                     }
                 }
             }
@@ -802,7 +802,7 @@ public class AssetSearcher : EditorWindow
         }
     }
 
-    void SearchInsideScriptableObject(ScriptableObject sr, string sceneName = null, string path = null)
+    void SearchAnyInSC(ScriptableObject sr, string sceneName = null, string path = null)
     {
         SerializedObject so = new SerializedObject(sr);
         SerializedProperty iterator = so.GetIterator();
@@ -811,7 +811,7 @@ public class AssetSearcher : EditorWindow
         {
             if (iterator.propertyType == SerializedPropertyType.ObjectReference)
             {
-                if (iterator.objectReferenceValue is Sprite && textureFromSprite((Sprite)iterator.objectReferenceValue) == newObject)
+                if (iterator.objectReferenceValue == newObject)
                 {
                     if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
                     {

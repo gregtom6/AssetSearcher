@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b78f3406b06574a9a5dd14b5b37e7d, type: 3}
   m_Name: TestScriptableObject
   m_EditorClassIdentifier: 
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: ed498636010d60d40b178ea0e98d744d, type: 3}
   script1: {fileID: 0}
   animclip: {fileID: 0}
   controller: {fileID: 0}
