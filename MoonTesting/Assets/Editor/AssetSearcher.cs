@@ -826,9 +826,9 @@ public class AssetSearcher : EditorWindow
         if (shouldAdd)
         {
             SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-            if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+            if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
             {
-                searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+                searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
                 searchResult.gameObjects.Add(go);
             }
         }
@@ -837,9 +837,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(AnimationClip clip, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -847,9 +847,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(AnimatorController animatorController, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -857,9 +857,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(AudioClip audioClip, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
