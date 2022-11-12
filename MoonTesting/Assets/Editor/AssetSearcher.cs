@@ -155,7 +155,7 @@ public class AssetSearcher : EditorWindow
                     }
                     else if (assets[i] is ScriptableObject)
                     {
-                        SearchScriptableObject((ScriptableObject)assets[i], "", path);
+                        SearchInsideScriptableObject((ScriptableObject)assets[i], "", path);
                     }
                 }
             }
@@ -246,6 +246,17 @@ public class AssetSearcher : EditorWindow
         else if (newObject is GameObject)
         {
             SearchPrefab(go, sceneName);
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                SearchGameObject(go.transform.GetChild(i).gameObject, sceneName);
+            }
+        }
+        else if(newObject is ScriptableObject)
+        {
+            SearchScriptableObject(go, sceneName);
 
             int childCount = go.transform.childCount;
 
@@ -701,7 +712,42 @@ public class AssetSearcher : EditorWindow
         }
     }
 
-    void SearchScriptableObject(ScriptableObject sr, string sceneName = null, string path = null)
+    void SearchScriptableObject(GameObject go, string sceneName = null)
+    {
+        Component[] components = go.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component c = components[i];
+            SerializedObject so = new SerializedObject(c);
+            SerializedProperty iterator = so.GetIterator();
+
+            while (iterator.Next(true))
+            {
+                if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                {
+                    if (iterator.objectReferenceValue is ScriptableObject && iterator.objectReferenceValue == newObject)
+                    {
+                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+                        {
+                            searchResults.Add(new SearchResult()
+                            {
+                                scene = EditorSceneManager.GetSceneByName(sceneName),
+                                gameObjects = new List<GameObject>(),
+                            });
+
+                            AddNewElementToResult((ScriptableObject)newObject, sceneName, go, c);
+                        }
+                        else
+                        {
+                            AddNewElementToResult((ScriptableObject)newObject, sceneName, go, c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void SearchInsideScriptableObject(ScriptableObject sr, string sceneName = null, string path = null)
     {
         SerializedObject so = new SerializedObject(sr);
         SerializedProperty iterator = so.GetIterator();
@@ -831,9 +877,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(Material material, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -841,9 +887,9 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(Shader shader, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -851,9 +897,19 @@ public class AssetSearcher : EditorWindow
     void AddNewElementToResult(GameObject prefab, string sceneName, GameObject go, Component c)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
-        if (!searchResult.paths.Contains(GetGameObjectPath(go.transform, c)))
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
         {
-            searchResult.paths.Add(GetGameObjectPath(go.transform, c));
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
+            searchResult.gameObjects.Add(go);
+        }
+    }
+
+    void AddNewElementToResult(ScriptableObject scriptableObject, string sceneName, GameObject go, Component c)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)).FirstOrDefault();
+        if (!searchResult.paths.Contains(sceneName + GetGameObjectPath(go.transform, c)))
+        {
+            searchResult.paths.Add(sceneName + GetGameObjectPath(go.transform, c));
             searchResult.gameObjects.Add(go);
         }
     }
@@ -871,29 +927,6 @@ public class AssetSearcher : EditorWindow
 
     private static string GetGameObjectPath(Transform transform, Component c)
     {
-        /*
-        if (c != null)
-        {
-            string path = string.Empty;
-            while (transform.parent != null)
-            {
-                transform = transform.parent;
-                path = transform.name + "/" + path;
-            }
-            return path + c.ToString();
-        }
-        else
-        {
-            string path = "/" + transform.name;
-            while (transform.transform.parent != null)
-            {
-                transform = transform.parent;
-                path = "/" + transform.name + path;
-            }
-            return path;
-        }
-        */
-
         string path = "/" + transform.name;
         while (transform.transform.parent != null)
         {

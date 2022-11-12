@@ -108,3 +108,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   g: {fileID: 3368018557621271483, guid: 1d6e65e41149a9340af4dfdcce523171, type: 3}
+  scriptableObject: {fileID: 11400000, guid: 41bc2e47a2907754f94105716d815164, type: 2}
