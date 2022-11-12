@@ -91,9 +91,31 @@ public class AssetSearcher : EditorWindow
             wasThereSearchAndNoBrowsingAfterThat = true;
         }
 
+        int indexOfFirstProjectFileResult = searchResults.IndexOf(searchResults.Where(x => x.scene.name == null).FirstOrDefault());
+
 
         for (int i = 0; i < searchResults.Count; i++)
         {
+            if (i == 0 && searchResults[i].scene.name != null)
+            {
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("");
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("--- Scene references ---");
+                GUILayout.EndHorizontal();
+            }
+
+            if (i == indexOfFirstProjectFileResult)
+            {
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("");
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("--- Project asset references ---");
+                GUILayout.EndHorizontal();
+            }
+
             for (int j = 0; j < searchResults[i].gameObjects.Count; j++)
             {
                 GUILayout.BeginHorizontal();
