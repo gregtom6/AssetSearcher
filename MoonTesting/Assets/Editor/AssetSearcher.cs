@@ -88,6 +88,7 @@ public class AssetSearcher : EditorWindow
             {
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField((searchResults[i].scene.name == null ? "project file" : searchResults[i].scene.name) + " " + searchResults[i].paths[j]);
+                EditorGUILayout.ObjectField(searchResults[i].gameObjects[j],typeof(GameObject), true);
                 GUILayout.EndHorizontal();
             }
 
@@ -197,6 +198,7 @@ public class AssetSearcher : EditorWindow
         }
         else if(newObject is Texture2D)
         {
+            //dont just animation search, also sprite renderer search
             SearchTexture2D(go, sceneName);
 
             int childCount = go.transform.childCount;
