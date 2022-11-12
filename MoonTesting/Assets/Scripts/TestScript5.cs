@@ -10,4 +10,6 @@ public class TestScript5 : MonoBehaviour
     public RuntimeAnimatorController controller;
     public Sprite sprite;
     public Material material;
+
+    public TextAsset text;
 }
