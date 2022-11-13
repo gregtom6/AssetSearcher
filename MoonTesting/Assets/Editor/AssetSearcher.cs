@@ -33,6 +33,7 @@ public class AssetSearcher : EditorWindow
         {typeof(Material), SearchMaterialInGO},
         {typeof(Shader), SearchShaderInGO},
         {typeof(GameObject), SearchPrefabInGO },
+        {typeof(ScriptableObject), SearchScriptableObjectInGO }
     };
 
     [MenuItem("MoonStudios/AssetSearcher")]
@@ -215,128 +216,35 @@ public class AssetSearcher : EditorWindow
 
     Action<GameObject, string> GetBackSearchingMethodBasedOnType(GameObject go, string sceneName)
     {
-        return searchingMethods[newObject.GetType()];
+        if (newObject is ScriptableObject)
+        {
+            if (searchingMethods.ContainsKey(typeof(ScriptableObject)))
+                return searchingMethods[typeof(ScriptableObject)];
+        }
+        else if(searchingMethods.ContainsKey(newObject.GetType()))
+            return searchingMethods[newObject.GetType()];
+
+        return null;
     }
 
     void SearchInsideGameObject(GameObject go, string sceneName = null, string path = null)
     {
-        if (newObject is MonoScript)
+        Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
+
+        if (searchMethod == null)
         {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is AnimationClip)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is AnimatorController)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is AudioClip)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is Texture2D)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is Material)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is Shader)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is GameObject)
-        {
-            Action<GameObject, string> searchMethod = GetBackSearchingMethodBasedOnType(go, sceneName);
-            searchMethod?.Invoke(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
-        }
-        else if (newObject is ScriptableObject)
-        {
-            SearchScriptableObjectInGO(go, sceneName);
-
-            int childCount = go.transform.childCount;
-
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
+            SearchAnyInGO(go, sceneName);
         }
         else
         {
-            SearchAnyInGO(go, sceneName);
+            searchMethod?.Invoke(go, sceneName);
+        }
 
-            int childCount = go.transform.childCount;
+        int childCount = go.transform.childCount;
 
-            for (int i = 0; i < childCount; i++)
-            {
-                SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
-            }
+        for (int i = 0; i < childCount; i++)
+        {
+            SearchInsideGameObject(go.transform.GetChild(i).gameObject, sceneName);
         }
     }
 
@@ -759,7 +667,7 @@ public class AssetSearcher : EditorWindow
         }
     }
 
-    void SearchScriptableObjectInGO(GameObject go, string sceneName = null)
+    static void SearchScriptableObjectInGO(GameObject go, string sceneName = null)
     {
         Component[] components = go.GetComponents<Component>();
         for (int i = 0; i < components.Length; i++)
