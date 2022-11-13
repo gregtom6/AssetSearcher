@@ -135,6 +135,8 @@ public class AssetSearcher : EditorWindow
                     EditorGUILayout.ObjectField(searchResults[i].gameObjects[j], typeof(GameObject), true);
                 else if (searchResults[i].scriptableObjects[j] != null)
                     EditorGUILayout.ObjectField(searchResults[i].scriptableObjects[j], typeof(ScriptableObject), true);
+                else if (searchResults[i].materials[j] != null)
+                    EditorGUILayout.ObjectField(searchResults[i].materials[j], typeof(Material), true);
                 GUILayout.EndHorizontal();
             }
         }
@@ -208,6 +210,10 @@ public class AssetSearcher : EditorWindow
                     else if (assets[i] is ScriptableObject)
                     {
                         SearchAnyInSC((ScriptableObject)assets[i], "", path);
+                    }
+                    else if (assets[i] is Material)
+                    {
+                        SearchInsideMaterialAsset((Material)assets[i], path);
                     }
                 }
             }
@@ -438,6 +444,27 @@ public class AssetSearcher : EditorWindow
             else
             {
                 SearchAny(go, sceneName, c);
+            }
+        }
+    }
+
+    void SearchInsideMaterialAsset(Material mat, string path)
+    {
+        if (mat.shader == newObject)
+        {
+            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName("")))
+            {
+                searchResults.Add(new SearchResult()
+                {
+                    scene = EditorSceneManager.GetSceneByName(""),
+                    gameObjects = new List<GameObject>(),
+                });
+
+                AddNewElementToResult(mat, path);
+            }
+            else
+            {
+                AddNewElementToResult(mat, path);
             }
         }
     }
@@ -761,6 +788,18 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    void AddNewElementToResult(Material material, string path)
+    {
+        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
+        if (!searchResult.paths.Contains(path))
+        {
+            searchResult.paths.Add(path);
+            searchResult.gameObjects.Add(null);
+            searchResult.scriptableObjects.Add(null);
+            searchResult.materials.Add(material);
+        }
+    }
+
     private static string GetGameObjectPath(Transform transform, Component c)
     {
         string path = "/" + transform.name;
@@ -785,4 +824,5 @@ public class SearchResult
     public List<string> paths = new List<string>();
     public List<GameObject> gameObjects = new List<GameObject>();
     public List<ScriptableObject> scriptableObjects = new List<ScriptableObject>();
+    public List<Material> materials = new List<Material>();
 }
