@@ -521,20 +521,27 @@ public class AssetSearcher : EditorWindow
         }
         else
         {
-            Component[] components = go.GetComponents<Component>();
-            for (int i = 0; i < components.Length; i++)
+            if (go == newObject && (PrefabUtility.GetPrefabAssetType(newObject) == PrefabAssetType.Regular || PrefabUtility.GetPrefabAssetType(newObject) == PrefabAssetType.Variant))
             {
-                Component c = components[i];
-                SerializedObject so = new SerializedObject(c);
-                SerializedProperty iterator = so.GetIterator();
-
-                while (iterator.Next(true))
+                InsertNewResultFromAScene(go, sceneName, null);
+            }
+            else
+            {
+                Component[] components = go.GetComponents<Component>();
+                for (int i = 0; i < components.Length; i++)
                 {
-                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
+                    Component c = components[i];
+                    SerializedObject so = new SerializedObject(c);
+                    SerializedProperty iterator = so.GetIterator();
+
+                    while (iterator.Next(true))
                     {
-                        if (iterator.objectReferenceValue is GameObject && iterator.objectReferenceValue == newObject)
+                        if (iterator.propertyType == SerializedPropertyType.ObjectReference)
                         {
-                            InsertNewResultFromAScene(go, sceneName, c);
+                            if (iterator.objectReferenceValue is GameObject && iterator.objectReferenceValue == newObject)
+                            {
+                                InsertNewResultFromAScene(go, sceneName, c);
+                            }
                         }
                     }
                 }
