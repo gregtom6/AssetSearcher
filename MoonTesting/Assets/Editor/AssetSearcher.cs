@@ -550,7 +550,7 @@ public class AssetSearcher : EditorWindow
 
                         for (int l = 0; l < keyframes.Length; l++)
                         {
-                            if (textureFromSprite((Sprite)keyframes[l].value) == newObject)
+                            if (TextureFromSprite((Sprite)keyframes[l].value) == newObject)
                             {
                                 if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
                                 {
@@ -580,7 +580,7 @@ public class AssetSearcher : EditorWindow
                 {
                     if (iterator.propertyType == SerializedPropertyType.ObjectReference)
                     {
-                        if (iterator.objectReferenceValue is Sprite && textureFromSprite((Sprite)iterator.objectReferenceValue) == newObject)
+                        if (iterator.objectReferenceValue is Sprite && TextureFromSprite((Sprite)iterator.objectReferenceValue) == newObject)
                         {
                             if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
                             {
@@ -838,7 +838,7 @@ public class AssetSearcher : EditorWindow
         return iterator.objectReferenceValue is Shader && (Shader)iterator.objectReferenceValue == newObject;
     }
 
-    public static Texture2D textureFromSprite(Sprite sprite)
+    public static Texture2D TextureFromSprite(Sprite sprite)
     {
         if (sprite.rect.width != sprite.texture.width)
         {
