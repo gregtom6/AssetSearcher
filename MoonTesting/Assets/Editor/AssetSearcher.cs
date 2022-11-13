@@ -301,21 +301,7 @@ public class AssetSearcher : EditorWindow
                 RuntimeAnimatorController animatorController = animator.runtimeAnimatorController;
                 if (animatorController.animationClips.Contains((AnimationClip)newObject))
                 {
-                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                    {
-                        searchResults.Add(new SearchResult()
-                        {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                            gameObjects = new List<GameObject>(),
-                        });
-
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-                    else
-                    {
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-
+                    InsertNewResult(go, sceneName, c);
                 }
             }
             else
@@ -338,21 +324,7 @@ public class AssetSearcher : EditorWindow
 
                 if (animatorController == (AnimatorController)newObject)
                 {
-                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                    {
-                        searchResults.Add(new SearchResult()
-                        {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                            gameObjects = new List<GameObject>(),
-                        });
-
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-                    else
-                    {
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-
+                    InsertNewResult(go, sceneName, c);
                 }
             }
             else
