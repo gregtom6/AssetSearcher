@@ -221,7 +221,7 @@ public class AssetSearcher : EditorWindow
             if (searchingMethods.ContainsKey(typeof(ScriptableObject)))
                 return searchingMethods[typeof(ScriptableObject)];
         }
-        else if(searchingMethods.ContainsKey(newObject.GetType()))
+        else if (searchingMethods.ContainsKey(newObject.GetType()))
             return searchingMethods[newObject.GetType()];
 
         return null;
@@ -514,7 +514,9 @@ public class AssetSearcher : EditorWindow
 
     static void SearchPrefabInGO(GameObject go, string sceneName = null)
     {
-        if (go == newObject)
+        GameObject prefabObject = PrefabUtility.GetCorrespondingObjectFromSource(go);
+
+        if (prefabObject == newObject)
         {
             if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
             {

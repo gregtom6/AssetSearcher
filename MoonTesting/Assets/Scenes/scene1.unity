@@ -236,6 +236,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 787262517885003448, guid: c9822106e16805d428c48b001c579dc6, type: 3}
+      propertyPath: g
+      value: 
+      objectReference: {fileID: 2943200541439090745, guid: 97ecaec0b77d8bc4e834ca69433baafd, type: 3}
     - target: {fileID: 787262517885003453, guid: c9822106e16805d428c48b001c579dc6, type: 3}
       propertyPath: m_Name
       value: Directional Light
