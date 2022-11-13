@@ -149,15 +149,6 @@ public class AssetSearcher : EditorWindow
             EditorGUILayout.LabelField("no result");
             GUILayout.EndHorizontal();
         }
-
-        /*
-        if(searchResults.Count > 0)
-        {
-            foreach (string scenePath in scenesToSearch)
-                EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
-        }
-        */
-
     }
 
     void Search()
@@ -371,6 +362,24 @@ public class AssetSearcher : EditorWindow
         }
     }
 
+    static void InsertNewResult(GameObject go, string sceneName, Component c)
+    {
+        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
+        {
+            searchResults.Add(new SearchResult()
+            {
+                scene = EditorSceneManager.GetSceneByName(sceneName),
+                gameObjects = new List<GameObject>(),
+            });
+
+            AddNewElementToResult(sceneName, go, c);
+        }
+        else
+        {
+            AddNewElementToResult(sceneName, go, c);
+        }
+    }
+
     static void SearchAudioClipInGO(GameObject go, string sceneName = null)
     {
         Component[] components = go.GetComponents<Component>();
@@ -383,21 +392,7 @@ public class AssetSearcher : EditorWindow
 
                 if (audioSource.clip == (AudioClip)newObject)
                 {
-                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                    {
-                        searchResults.Add(new SearchResult()
-                        {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                            gameObjects = new List<GameObject>(),
-                        });
-
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-                    else
-                    {
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-
+                    InsertNewResult(go, sceneName, c);
                 }
             }
             else
@@ -428,20 +423,7 @@ public class AssetSearcher : EditorWindow
                         {
                             if (TextureFromSprite((Sprite)keyframes[l].value) == newObject)
                             {
-                                if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                                {
-                                    searchResults.Add(new SearchResult()
-                                    {
-                                        scene = EditorSceneManager.GetSceneByName(sceneName),
-                                        gameObjects = new List<GameObject>(),
-                                    });
-
-                                    AddNewElementToResult(sceneName, go, c);
-                                }
-                                else
-                                {
-                                    AddNewElementToResult(sceneName, go, c);
-                                }
+                                InsertNewResult(go, sceneName, c);
                             }
                         }
                     }
@@ -544,20 +526,7 @@ public class AssetSearcher : EditorWindow
                 {
                     if (iterator.objectReferenceValue is Material && iterator.objectReferenceValue == newObject)
                     {
-                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                        {
-                            searchResults.Add(new SearchResult()
-                            {
-                                scene = EditorSceneManager.GetSceneByName(sceneName),
-                                gameObjects = new List<GameObject>(),
-                            });
-
-                            AddNewElementToResult(sceneName, go, c);
-                        }
-                        else
-                        {
-                            AddNewElementToResult(sceneName, go, c);
-                        }
+                        InsertNewResult(go, sceneName, c);
                     }
                 }
             }
@@ -579,20 +548,7 @@ public class AssetSearcher : EditorWindow
                 {
                     if (IsItInsideMaterial(iterator) || IsItTheSearchedShader(iterator))
                     {
-                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                        {
-                            searchResults.Add(new SearchResult()
-                            {
-                                scene = EditorSceneManager.GetSceneByName(sceneName),
-                                gameObjects = new List<GameObject>(),
-                            });
-
-                            AddNewElementToResult(sceneName, go, c);
-                        }
-                        else
-                        {
-                            AddNewElementToResult(sceneName, go, c);
-                        }
+                        InsertNewResult(go, sceneName, c);
                     }
                 }
             }
@@ -605,20 +561,7 @@ public class AssetSearcher : EditorWindow
 
         if (prefabObject == newObject)
         {
-            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-            {
-                searchResults.Add(new SearchResult()
-                {
-                    scene = EditorSceneManager.GetSceneByName(sceneName),
-                    gameObjects = new List<GameObject>(),
-                });
-
-                AddNewElementToResult(sceneName, go, null);
-            }
-            else
-            {
-                AddNewElementToResult(sceneName, go, null);
-            }
+            InsertNewResult(go, sceneName, null);
         }
         else
         {
@@ -635,20 +578,7 @@ public class AssetSearcher : EditorWindow
                     {
                         if (iterator.objectReferenceValue is GameObject && iterator.objectReferenceValue == newObject)
                         {
-                            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                            {
-                                searchResults.Add(new SearchResult()
-                                {
-                                    scene = EditorSceneManager.GetSceneByName(sceneName),
-                                    gameObjects = new List<GameObject>(),
-                                });
-
-                                AddNewElementToResult(sceneName, go, c);
-                            }
-                            else
-                            {
-                                AddNewElementToResult(sceneName, go, c);
-                            }
+                            InsertNewResult(go, sceneName, c);
                         }
                     }
                 }
@@ -671,20 +601,7 @@ public class AssetSearcher : EditorWindow
                 {
                     if (iterator.objectReferenceValue is ScriptableObject && iterator.objectReferenceValue == newObject)
                     {
-                        if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                        {
-                            searchResults.Add(new SearchResult()
-                            {
-                                scene = EditorSceneManager.GetSceneByName(sceneName),
-                                gameObjects = new List<GameObject>(),
-                            });
-
-                            AddNewElementToResult(sceneName, go, c);
-                        }
-                        else
-                        {
-                            AddNewElementToResult(sceneName, go, c);
-                        }
+                        InsertNewResult(go, sceneName, c);
                     }
                 }
             }
@@ -702,20 +619,7 @@ public class AssetSearcher : EditorWindow
             {
                 if (iterator.objectReferenceValue == newObject)
                 {
-                    if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName(sceneName)))
-                    {
-                        searchResults.Add(new SearchResult()
-                        {
-                            scene = EditorSceneManager.GetSceneByName(sceneName),
-                            gameObjects = new List<GameObject>(),
-                        });
-
-                        AddNewElementToResult(sceneName, go, c);
-                    }
-                    else
-                    {
-                        AddNewElementToResult(sceneName, go, c);
-                    }
+                    InsertNewResult(go, sceneName, c);
                 }
             }
         }
