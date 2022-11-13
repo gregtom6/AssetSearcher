@@ -65,32 +65,34 @@ public class AssetSearcher : EditorWindow
                 fieldsAndTheirValuesToSearchFor.Clear();
             }
 
-            for (int i = 0; i < monoBehaviourType.GetFields().Length; i++)
+            if (monoBehaviourType != null)
             {
-                valueOfFields.Add("");
-                shouldISearchForBools.Add(false);
-                if (!fieldsAndTheirValuesToSearchFor.ContainsKey(monoBehaviourType.GetFields()[i]))
-                    fieldsAndTheirValuesToSearchFor.Add(monoBehaviourType.GetFields()[i], new ShouldISearchForItAndString()
-                    {
-                        shouldISearchForIt = false,
-                        value = "",
-                    });
-            }
-
-            for (int i = 0; i < monoBehaviourType.GetFields().Length; i++)
-            {
-                FieldInfo field = monoBehaviourType.GetFields()[i];
-                GUILayout.BeginHorizontal();
-                shouldISearchForBools[i] = EditorGUILayout.Toggle("search for it? ", shouldISearchForBools[i]);
-                valueOfFields[i] = EditorGUILayout.TextField(field.Name + " " + field.FieldType.ToString() + " ", valueOfFields[i]);
-                fieldsAndTheirValuesToSearchFor[field] = new ShouldISearchForItAndString()
+                for (int i = 0; i < monoBehaviourType.GetFields().Length; i++)
                 {
-                    shouldISearchForIt = shouldISearchForBools[i],
-                    value = valueOfFields[i],
-                };
-                GUILayout.EndHorizontal();
-            }
+                    valueOfFields.Add("");
+                    shouldISearchForBools.Add(false);
+                    if (!fieldsAndTheirValuesToSearchFor.ContainsKey(monoBehaviourType.GetFields()[i]))
+                        fieldsAndTheirValuesToSearchFor.Add(monoBehaviourType.GetFields()[i], new ShouldISearchForItAndString()
+                        {
+                            shouldISearchForIt = false,
+                            value = "",
+                        });
+                }
 
+                for (int i = 0; i < monoBehaviourType.GetFields().Length; i++)
+                {
+                    FieldInfo field = monoBehaviourType.GetFields()[i];
+                    GUILayout.BeginHorizontal();
+                    shouldISearchForBools[i] = EditorGUILayout.Toggle("search for it? ", shouldISearchForBools[i]);
+                    valueOfFields[i] = EditorGUILayout.TextField(field.Name + " " + field.FieldType.ToString() + " ", valueOfFields[i]);
+                    fieldsAndTheirValuesToSearchFor[field] = new ShouldISearchForItAndString()
+                    {
+                        shouldISearchForIt = shouldISearchForBools[i],
+                        value = valueOfFields[i],
+                    };
+                    GUILayout.EndHorizontal();
+                }
+            }
 
             previousType = monoBehaviourType;
         }
