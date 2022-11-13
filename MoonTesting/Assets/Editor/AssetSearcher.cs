@@ -20,9 +20,6 @@ public class AssetSearcher : EditorWindow
 
     HashSet<string> scenesToSearch = new HashSet<string>();
 
-
-    List<string> resultFields = new List<string>();
-
     bool wasThereSearchAndNoBrowsingAfterThat;
 
     [MenuItem("MoonStudios/AssetSearcher")]
@@ -149,6 +146,13 @@ public class AssetSearcher : EditorWindow
     {
         if (newObject == null) { return; }
 
+        SearchingInScenes();
+
+        SearchingInProjectAssets();
+    }
+
+    void SearchingInScenes()
+    {
         string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
         for (int i = 0; i < sceneGuids.Length; i++)
             scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
@@ -166,12 +170,11 @@ public class AssetSearcher : EditorWindow
             {
                 SearchInsideGameObject(rootGameObjects[i], scene.name);
             }
-
-
         }
+    }
 
-        //---------------------------------
-
+    void SearchingInProjectAssets()
+    {
         string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
 
         foreach (string path in allAssetPaths)
