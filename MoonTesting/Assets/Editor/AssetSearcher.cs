@@ -137,7 +137,7 @@ public class AssetSearcher : EditorWindow
                     EditorGUILayout.ObjectField(searchResults[i].scriptableObjects[j], typeof(ScriptableObject), true);
                 else if (searchResults[i].materials[j] != null)
                     EditorGUILayout.ObjectField(searchResults[i].materials[j], typeof(Material), true);
-                else if (searchResults[i].animators[j]!=null)
+                else if (searchResults[i].animators[j] != null)
                     EditorGUILayout.ObjectField(searchResults[i].animators[j], typeof(RuntimeAnimatorController), true);
                 GUILayout.EndHorizontal();
             }
@@ -420,11 +420,11 @@ public class AssetSearcher : EditorWindow
                     gameObjects = new List<GameObject>(),
                 });
 
-                AddNewElementToResult(mat, path);
+                AddNewAssetElementToResult(mat, path);
             }
             else
             {
-                AddNewElementToResult(mat, path);
+                AddNewAssetElementToResult(mat, path);
             }
         }
     }
@@ -441,11 +441,11 @@ public class AssetSearcher : EditorWindow
                     gameObjects = new List<GameObject>(),
                 });
 
-                AddNewElementToResult(runtimeAnimatorController, path);
+                AddNewAssetElementToResult(runtimeAnimatorController, path);
             }
             else
             {
-                AddNewElementToResult(runtimeAnimatorController, path);
+                AddNewAssetElementToResult(runtimeAnimatorController, path);
             }
 
         }
@@ -470,11 +470,11 @@ public class AssetSearcher : EditorWindow
                                     gameObjects = new List<GameObject>(),
                                 });
 
-                                AddNewElementToResult(runtimeAnimatorController, path);
+                                AddNewAssetElementToResult(runtimeAnimatorController, path);
                             }
                             else
                             {
-                                AddNewElementToResult(runtimeAnimatorController, path);
+                                AddNewAssetElementToResult(runtimeAnimatorController, path);
                             }
                         }
                     }
@@ -626,11 +626,11 @@ public class AssetSearcher : EditorWindow
                             gameObjects = new List<GameObject>(),
                         });
 
-                        AddNewElementToResult(sr, path);
+                        AddNewAssetElementToResult(sr, path);
                     }
                     else
                     {
-                        AddNewElementToResult(sr, path);
+                        AddNewAssetElementToResult(sr, path);
                     }
                 }
             }
@@ -713,39 +713,16 @@ public class AssetSearcher : EditorWindow
         }
     }
 
-    void AddNewElementToResult(ScriptableObject scriptableObject, string path)
+    void AddNewAssetElementToResult(UnityEngine.Object assetElement, string path)
     {
         SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
         if (!searchResult.paths.Contains(path))
         {
             searchResult.paths.Add(path);
             searchResult.gameObjects.Add(null);
-            searchResult.scriptableObjects.Add(scriptableObject);
-        }
-    }
-
-    void AddNewElementToResult(Material material, string path)
-    {
-        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
-        if (!searchResult.paths.Contains(path))
-        {
-            searchResult.paths.Add(path);
-            searchResult.gameObjects.Add(null);
-            searchResult.scriptableObjects.Add(null);
-            searchResult.materials.Add(material);
-        }
-    }
-
-    void AddNewElementToResult(RuntimeAnimatorController animator, string path)
-    {
-        SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
-        if (!searchResult.paths.Contains(path))
-        {
-            searchResult.paths.Add(path);
-            searchResult.gameObjects.Add(null);
-            searchResult.scriptableObjects.Add(null);
-            searchResult.materials.Add(null);
-            searchResult.animators.Add(animator);
+            searchResult.scriptableObjects.Add(assetElement is ScriptableObject ? (ScriptableObject)assetElement : null);
+            searchResult.materials.Add(assetElement is Material ? (Material)assetElement : null);
+            searchResult.animators.Add(assetElement is RuntimeAnimatorController ? (RuntimeAnimatorController)assetElement : null);
         }
     }
 
