@@ -477,7 +477,7 @@ public class AssetSearcher : EditorWindow
 
     void SearchInsideAnimatorAsset(RuntimeAnimatorController runtimeAnimatorController, string path)
     {
-        if (runtimeAnimatorController.animationClips.Contains((AnimationClip)newObject))
+        if (newObject is AnimationClip && runtimeAnimatorController.animationClips.Contains((AnimationClip)newObject))
         {
             if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName("")))
             {
@@ -494,6 +494,38 @@ public class AssetSearcher : EditorWindow
                 AddNewElementToResult(runtimeAnimatorController, path);
             }
 
+        }
+        else
+        {
+            for (int j = 0; j < runtimeAnimatorController.animationClips.Length; j++)
+            {
+                EditorCurveBinding[] objectCurves = AnimationUtility.GetObjectReferenceCurveBindings(runtimeAnimatorController.animationClips[j]);
+                for (int k = 0; k < objectCurves.Length; k++)
+                {
+                    ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(runtimeAnimatorController.animationClips[j], objectCurves[k]);
+
+                    for (int l = 0; l < keyframes.Length; l++)
+                    {
+                        if (TextureFromSprite((Sprite)keyframes[l].value) == newObject)
+                        {
+                            if (!searchResults.Any(x => x.scene == EditorSceneManager.GetSceneByName("")))
+                            {
+                                searchResults.Add(new SearchResult()
+                                {
+                                    scene = EditorSceneManager.GetSceneByName(""),
+                                    gameObjects = new List<GameObject>(),
+                                });
+
+                                AddNewElementToResult(runtimeAnimatorController, path);
+                            }
+                            else
+                            {
+                                AddNewElementToResult(runtimeAnimatorController, path);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
