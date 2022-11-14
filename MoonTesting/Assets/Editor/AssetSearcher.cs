@@ -27,6 +27,8 @@ public class AssetSearcher : EditorWindow
 
     string searchedSceneName;
 
+    Vector2 verticalScrollPos = Vector2.zero;
+
     Dictionary<Type, Action<GameObject, string>> searchingMethods = new Dictionary<Type, Action<GameObject, string>>()
     {
         { typeof(MonoScript), SearchMonoScriptInGO},
@@ -48,6 +50,8 @@ public class AssetSearcher : EditorWindow
 
     void OnGUI()
     {
+
+
         UnityEngine.Object prevObject = newObject;
         newObject = EditorGUILayout.ObjectField("", newObject, typeof(UnityEngine.Object), true);
 
@@ -149,6 +153,11 @@ public class AssetSearcher : EditorWindow
 
         int indexOfFirstProjectFileResult = searchResults.IndexOf(searchResults.Where(x => x.scene.name == null).FirstOrDefault());
 
+        if (searchResults.Count > 0)
+        {
+            EditorGUILayout.BeginVertical();
+            verticalScrollPos = EditorGUILayout.BeginScrollView(verticalScrollPos);
+        }
 
         for (int i = 0; i < searchResults.Count; i++)
         {
@@ -187,6 +196,13 @@ public class AssetSearcher : EditorWindow
                 GUILayout.EndHorizontal();
             }
         }
+
+        if (searchResults.Count > 0)
+        {
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+        }
+        
 
         if (searchResults.Count == 0 && wasThereSearchAndNoBrowsingAfterThat)
         {
