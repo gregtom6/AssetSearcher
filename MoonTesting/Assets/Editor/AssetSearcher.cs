@@ -97,12 +97,38 @@ public class AssetSearcher : EditorWindow
             previousType = monoBehaviourType;
         }
 
-        if (GUILayout.Button("search"))
+        if (GUILayout.Button("search in project file assets"))
+        {
+            SearchResult searchResult = searchResults.Where(x => x.scene == EditorSceneManager.GetSceneByName("")).FirstOrDefault();
+            if (searchResult != null)
+                searchResults.RemoveAt(searchResults.IndexOf(searchResult));
+
+            wasThereSearchAndNoBrowsingAfterThat = true;
+
+            if (newObject == null) { return; }
+
+            SearchingInProjectAssets();
+
+        }
+
+        string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
+        for (int i = 0; i < sceneGuids.Length; i++)
+            scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
+
+        foreach (string scenePath in scenesToSearch)
+        {
+            Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
+            if (GUILayout.Button("search in " + scene.name))
+            {
+
+            }
+        }
+
+        if (GUILayout.Button("clear results"))
         {
             searchResults.Clear();
-            Search();
-            wasThereSearchAndNoBrowsingAfterThat = true;
         }
+
 
         int indexOfFirstProjectFileResult = searchResults.IndexOf(searchResults.Where(x => x.scene.name == null).FirstOrDefault());
 
@@ -155,11 +181,7 @@ public class AssetSearcher : EditorWindow
 
     void Search()
     {
-        if (newObject == null) { return; }
 
-        SearchingInScenes();
-
-        SearchingInProjectAssets();
     }
 
     void SearchingInScenes()
