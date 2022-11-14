@@ -809,10 +809,15 @@ public class AssetSearcher : EditorWindow
         {
             if (fieldsAndTheirValuesToSearchFor[fieldInfo].shouldISearchForIt)
             {
-                if(fieldInfo.FieldType.IsValueType || fieldInfo.FieldType == typeof(string))
+                if (fieldInfo.FieldType.IsValueType || fieldInfo.FieldType == typeof(string))
                     fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].value.ToString());
                 else
-                    fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].obj.ToString());
+                {
+                    if (fieldsAndTheirValuesToSearchFor[fieldInfo].obj != null)
+                        fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].obj.ToString());
+                    else
+                        fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour) == null);
+                }
             }
         }
 
