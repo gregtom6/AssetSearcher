@@ -623,9 +623,10 @@ public class AssetSearcher : EditorWindow
     {
         if (go == null) { return; }
 
+        GameObject prefabObj = PrefabUtility.GetCorrespondingObjectFromSource(go);
         GameObject prefabObject = PrefabUtility.GetCorrespondingObjectFromOriginalSource(go);
 
-        if (prefabObject == newObject)
+        if (prefabObject == newObject || prefabObj == newObject)
         {
             InsertNewResultFromAScene(go, sceneName, null);
         }
