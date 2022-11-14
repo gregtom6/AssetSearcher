@@ -13,7 +13,7 @@ public class AssetSearcher : EditorWindow
 {
     static UnityEngine.Object newObject = null;
     static Dictionary<FieldInfo, ShouldISearchForItAndString> fieldsAndTheirValuesToSearchFor = new Dictionary<FieldInfo, ShouldISearchForItAndString>();
-    List<string> valueOfFields = new List<string>();
+    List<UnityObjectAndString> valueOfFields = new List<UnityObjectAndString>();
     List<bool> shouldISearchForBools = new List<bool>();
     System.Type previousType;
 
@@ -77,7 +77,7 @@ public class AssetSearcher : EditorWindow
             {
                 for (int i = 0; i < monoBehaviourType.GetFields().Length; i++)
                 {
-                    valueOfFields.Add("");
+                    valueOfFields.Add(null);
                     shouldISearchForBools.Add(false);
                     if (!fieldsAndTheirValuesToSearchFor.ContainsKey(monoBehaviourType.GetFields()[i]))
                         fieldsAndTheirValuesToSearchFor.Add(monoBehaviourType.GetFields()[i], new ShouldISearchForItAndString()
@@ -94,12 +94,27 @@ public class AssetSearcher : EditorWindow
                     shouldISearchForBools[i] = EditorGUILayout.Toggle("search for it? ", shouldISearchForBools[i]);
                     EditorGUILayout.LabelField(field.Name);
                     EditorGUILayout.LabelField(field.FieldType.ToString());
-                    valueOfFields[i] = EditorGUILayout.TextField("", valueOfFields[i]);
+
+                    if (valueOfFields[i] == null)
+                    {
+                        valueOfFields[i] = new UnityObjectAndString();
+                    }
+
+                    if (field.FieldType.IsValueType || field.FieldType == typeof(string))
+                    {
+                        valueOfFields[i].value = EditorGUILayout.TextField(valueOfFields[i].value.ToString());
+                    }
+                    else
+                    {
+                        valueOfFields[i].obj = EditorGUILayout.ObjectField(valueOfFields[i].obj, field.FieldType, true);
+                    }
                     fieldsAndTheirValuesToSearchFor[field] = new ShouldISearchForItAndString()
                     {
                         shouldISearchForIt = shouldISearchForBools[i],
-                        value = valueOfFields[i],
+                        value = valueOfFields[i].value,
+                        obj = valueOfFields[i].obj,
                     };
+
                     GUILayout.EndHorizontal();
                 }
             }
@@ -793,7 +808,12 @@ public class AssetSearcher : EditorWindow
         foreach (FieldInfo fieldInfo in monoBehaviour.GetType().GetFields())
         {
             if (fieldsAndTheirValuesToSearchFor[fieldInfo].shouldISearchForIt)
-                fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].value.ToString());
+            {
+                if(fieldInfo.FieldType.IsValueType || fieldInfo.FieldType == typeof(string))
+                    fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].value.ToString());
+                else
+                    fieldValueCheckResults.Add(fieldInfo.GetValue(monoBehaviour).ToString() == fieldsAndTheirValuesToSearchFor[fieldInfo].obj.ToString());
+            }
         }
 
 
@@ -882,9 +902,16 @@ public class AssetSearcher : EditorWindow
     }
 }
 
+public class UnityObjectAndString
+{
+    public UnityEngine.Object obj;
+    public string value = "";
+}
+
 public class ShouldISearchForItAndString
 {
     public bool shouldISearchForIt;
+    public UnityEngine.Object obj;
     public object value;
 }
 
