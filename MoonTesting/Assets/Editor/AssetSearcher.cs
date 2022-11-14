@@ -23,6 +23,10 @@ public class AssetSearcher : EditorWindow
 
     bool wasThereSearchAndNoBrowsingAfterThat;
 
+    int countBeforeSearching;
+
+    string searchedSceneName;
+
     Dictionary<Type, Action<GameObject, string>> searchingMethods = new Dictionary<Type, Action<GameObject, string>>()
     {
         { typeof(MonoScript), SearchMonoScriptInGO},
@@ -108,7 +112,6 @@ public class AssetSearcher : EditorWindow
             if (newObject == null) { return; }
 
             SearchingInProjectAssets();
-
         }
 
         string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
@@ -128,6 +131,10 @@ public class AssetSearcher : EditorWindow
 
                 if (newObject == null) { return; }
 
+                countBeforeSearching = searchResults.Count;
+
+                searchedSceneName = scene.name;
+
                 SearchingInScenes(scene, scenePath);
             }
         }
@@ -145,7 +152,7 @@ public class AssetSearcher : EditorWindow
 
         for (int i = 0; i < searchResults.Count; i++)
         {
-            if (i == 0)
+            if (i == 0 && searchResults.Any(x => x.scene.name != null))
             {
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("");
@@ -187,11 +194,16 @@ public class AssetSearcher : EditorWindow
             EditorGUILayout.LabelField("no result");
             GUILayout.EndHorizontal();
         }
-    }
 
-    void Search()
-    {
-
+        if (countBeforeSearching == searchResults.Count && wasThereSearchAndNoBrowsingAfterThat)
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("");
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("no result in scene " + searchedSceneName);
+            GUILayout.EndHorizontal();
+        }
     }
 
     void SearchingInScenes(Scene scene, string scenePath)
