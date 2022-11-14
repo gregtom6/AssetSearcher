@@ -92,7 +92,9 @@ public class AssetSearcher : EditorWindow
                     FieldInfo field = monoBehaviourType.GetFields()[i];
                     GUILayout.BeginHorizontal();
                     shouldISearchForBools[i] = EditorGUILayout.Toggle("search for it? ", shouldISearchForBools[i]);
-                    valueOfFields[i] = EditorGUILayout.TextField(field.Name + " " + field.FieldType.ToString() + " ", valueOfFields[i]);
+                    EditorGUILayout.LabelField(field.Name);
+                    EditorGUILayout.LabelField(field.FieldType.ToString());
+                    valueOfFields[i] = EditorGUILayout.TextField("", valueOfFields[i]);
                     fieldsAndTheirValuesToSearchFor[field] = new ShouldISearchForItAndString()
                     {
                         shouldISearchForIt = shouldISearchForBools[i],
