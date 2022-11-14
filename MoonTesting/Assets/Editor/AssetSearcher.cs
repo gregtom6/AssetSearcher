@@ -124,9 +124,14 @@ public class AssetSearcher : EditorWindow
 
         foreach (string scenePath in scenesToSearch)
         {
-            Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
-            if (GUILayout.Button("search in " + scene.name))
+            string sceneName = scenePath.Split('/').Last();
+            if (GUILayout.Button("search in " + sceneName))
             {
+                Scene scene = EditorSceneManager.GetSceneByName(sceneName);
+
+                if (!scene.isLoaded)
+                    scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+
                 SearchResult searchResult = searchResults.Where(x => x.scene == scene).FirstOrDefault();
                 if (searchResult != null)
                     searchResults.RemoveAt(searchResults.IndexOf(searchResult));
@@ -137,15 +142,27 @@ public class AssetSearcher : EditorWindow
 
                 countBeforeSearching = searchResults.Count;
 
-                searchedSceneName = scene.name;
+                searchedSceneName = sceneName;
 
                 SearchingInScenes(scene, scenePath);
             }
         }
 
-        if (GUILayout.Button("clear results"))
+        if (GUILayout.Button("clear results and unload all opened scenes"))
         {
             searchResults.Clear();
+
+            int countLoaded = SceneManager.sceneCount;
+            Scene[] loadedScenes = new Scene[countLoaded];
+            for (int i = 0; i < countLoaded; i++)
+            {
+                loadedScenes[i] = SceneManager.GetSceneAt(i);
+            }
+
+            foreach (Scene scene in loadedScenes)
+            {
+                EditorSceneManager.CloseScene(scene, true);
+            }
         }
 
         searchResults = searchResults.OrderBy(x => x.scene.name).ToList();
@@ -197,13 +214,6 @@ public class AssetSearcher : EditorWindow
             }
         }
 
-        if (searchResults.Count > 0)
-        {
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndVertical();
-        }
-        
-
         if (searchResults.Count == 0 && wasThereSearchAndNoBrowsingAfterThat)
         {
             GUILayout.BeginHorizontal();
@@ -220,13 +230,16 @@ public class AssetSearcher : EditorWindow
             EditorGUILayout.LabelField("no result in scene " + searchedSceneName);
             GUILayout.EndHorizontal();
         }
+
+        if (searchResults.Count > 0)
+        {
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+        }
     }
 
     void SearchingInScenes(Scene scene, string scenePath)
     {
-        if (!scene.isLoaded)
-            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-
         GameObject[] rootGameObjects = scene.GetRootGameObjects();
 
         for (int i = 0; i < rootGameObjects.Length; i++)
