@@ -120,7 +120,15 @@ public class AssetSearcher : EditorWindow
             Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
             if (GUILayout.Button("search in " + scene.name))
             {
+                SearchResult searchResult = searchResults.Where(x => x.scene == scene).FirstOrDefault();
+                if (searchResult != null)
+                    searchResults.RemoveAt(searchResults.IndexOf(searchResult));
 
+                wasThereSearchAndNoBrowsingAfterThat = true;
+
+                if (newObject == null) { return; }
+
+                SearchingInScenes(scene, scenePath);
             }
         }
 
@@ -129,13 +137,15 @@ public class AssetSearcher : EditorWindow
             searchResults.Clear();
         }
 
+        searchResults = searchResults.OrderBy(x => x.scene.name).ToList();
+        searchResults = searchResults.OrderBy(x => x.scene.name != null ? 0 : 1).ToList();
 
         int indexOfFirstProjectFileResult = searchResults.IndexOf(searchResults.Where(x => x.scene.name == null).FirstOrDefault());
 
 
         for (int i = 0; i < searchResults.Count; i++)
         {
-            if (i == 0 && searchResults[i].scene.name != null)
+            if (i == 0)
             {
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("");
@@ -184,25 +194,16 @@ public class AssetSearcher : EditorWindow
 
     }
 
-    void SearchingInScenes()
+    void SearchingInScenes(Scene scene, string scenePath)
     {
-        string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
-        for (int i = 0; i < sceneGuids.Length; i++)
-            scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
+        if (!scene.isLoaded)
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
 
-        foreach (string scenePath in scenesToSearch)
+        GameObject[] rootGameObjects = scene.GetRootGameObjects();
+
+        for (int i = 0; i < rootGameObjects.Length; i++)
         {
-            Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
-
-            if (!scene.isLoaded)
-                scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-
-            GameObject[] rootGameObjects = scene.GetRootGameObjects();
-
-            for (int i = 0; i < rootGameObjects.Length; i++)
-            {
-                SearchInsideGameObject(rootGameObjects[i], scene.name);
-            }
+            SearchInsideGameObject(rootGameObjects[i], scene.name);
         }
     }
 
