@@ -29,6 +29,8 @@ public class AssetSearcher : EditorWindow
 
     Vector2 verticalScrollPos = Vector2.zero;
 
+    string[] sceneGuids;
+
     Dictionary<Type, Action<GameObject, string>> searchingMethods = new Dictionary<Type, Action<GameObject, string>>()
     {
         { typeof(MonoScript), SearchMonoScriptInGO},
@@ -120,9 +122,12 @@ public class AssetSearcher : EditorWindow
             SearchingInProjectAssets();
         }
 
-        string[] sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
-        for (int i = 0; i < sceneGuids.Length; i++)
-            scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
+        if (sceneGuids == null || sceneGuids.Length == 0)
+        {
+            sceneGuids = AssetDatabase.FindAssets("t:SceneAsset");
+            for (int i = 0; i < sceneGuids.Length; i++)
+                scenesToSearch.Add(AssetDatabase.GUIDToAssetPath(sceneGuids[i]));
+        }
 
         foreach (string scenePath in scenesToSearch)
         {
